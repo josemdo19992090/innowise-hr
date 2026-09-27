@@ -92,7 +92,7 @@ export default function CandidatePage() {
       <BackLink t={t} />
 
       {/* CV evaluation */}
-      <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold">{candidate.extractedName}</h1>
@@ -116,7 +116,7 @@ export default function CandidatePage() {
       </section>
 
       {/* Interview checklist */}
-      <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <h2 className="text-lg font-semibold">{t.checklistTitle}</h2>
         <p className="mt-1 text-sm text-gray-600">{t.checklistHint}</p>
 
@@ -155,7 +155,7 @@ export default function CandidatePage() {
                       onClick={() => update(item.key, { score: n })}
                       className={`flex h-12 w-12 flex-col items-center justify-center rounded-md border text-sm font-semibold transition sm:w-16 ${
                         item.score === n
-                          ? "border-indigo-600 bg-indigo-600 text-white"
+                          ? "border-transparent bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/20"
                           : "border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50"
                       }`}
                     >
@@ -189,7 +189,7 @@ export default function CandidatePage() {
           <button
             onClick={save}
             disabled={saving}
-            className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-indigo-600/20 transition hover:shadow-lg hover:shadow-indigo-600/30 disabled:opacity-50"
           >
             {saving ? t.saving : t.saveInterview}
           </button>
@@ -208,7 +208,7 @@ export default function CandidatePage() {
 
       {/* Past interviews (read-only) */}
       {interviews.length > 0 && (
-        <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
           <h2 className="text-lg font-semibold">{t.pastInterviews}</h2>
           <div className="mt-4 space-y-4">
             {interviews.map((iv) => (

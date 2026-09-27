@@ -26,7 +26,7 @@ export default function StatsPage() {
         <Tile label={t.statsAvgInterview} value={stats && fmt(stats.avgInterviewScore, 1)} suffix="/5" />
       </div>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <h2 className="text-lg font-semibold">{t.statsWeakest}</h2>
         <p className="mt-1 text-sm text-gray-600">{t.statsWeakestHint}</p>
 
@@ -68,7 +68,7 @@ export default function StatsPage() {
 
 function Tile({ label, value, suffix }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60">
       <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</div>
       <div className="mt-2 text-2xl font-semibold tabular-nums">
         {value ?? <span className="inline-block h-7 w-12 animate-pulse rounded bg-gray-100 align-middle" />}

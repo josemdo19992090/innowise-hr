@@ -1,11 +1,24 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-inter), "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
 :root {
   color-scheme: light;
+  --brand-from: #4f46e5;
+  --brand-to: #7c3aed;
 }
 
 body {
-  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: #f6f7f9;
+  background:
+    radial-gradient(1100px 520px at 8% -10%, rgba(79, 70, 229, 0.10), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, rgba(124, 58, 237, 0.08), transparent 55%),
+    #f7f7fb;
   color: #111827;
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.25);
 }
