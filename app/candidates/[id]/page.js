@@ -7,6 +7,7 @@ import { useT, errorText } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../../ScoreBadge";
 import ConfirmDialog from "../../ConfirmDialog";
+import RatingScale from "../../RatingScale";
 
 let keySeq = 0;
 const nextKey = () => `item-${++keySeq}`;
@@ -143,7 +144,29 @@ export default function CandidatePage() {
           </div>
         </div>
 
-        <p className="mt-4 whitespace-pre-line leading-relaxed text-gray-700">{candidate.summary}</p>
+        {candidate.summary && <p className="mt-4 whitespace-pre-line leading-relaxed text-gray-700">{candidate.summary}</p>}
+
+        {candidate.manualCriteria?.length > 0 && (
+          <div className="mt-4 rounded-lg bg-gray-50 p-4">
+            <h3 className="text-sm font-semibold text-gray-700">
+              {t.manualCriteriaBreakdown}
+              <span className="ml-1 font-normal text-gray-500">
+                ({t.manualScoreFormula((candidate.manualCriteria.reduce((s, c) => s + c.score, 0) / candidate.manualCriteria.length).toFixed(1))})
+              </span>
+            </h3>
+            <ul className="mt-2 space-y-2">
+              {candidate.manualCriteria.map((c, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm">
+                  <span className="min-w-0 flex-1 truncate text-gray-700">{c.name}</span>
+                  <div className="h-1.5 w-24 shrink-0 rounded-full bg-gray-200">
+                    <div className="h-1.5 rounded-full bg-indigo-500" style={{ width: `${(c.score / 5) * 100}%` }} />
+                  </div>
+                  <span className="w-8 shrink-0 text-right font-semibold tabular-nums text-gray-900">{c.score}/5</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <EvidenceList title={t.detailStrengths} items={candidate.strengths} tone="green" />
@@ -184,27 +207,7 @@ export default function CandidatePage() {
               </div>
 
               <div className="mt-3 flex flex-col gap-3 pl-7 lg:flex-row lg:items-start">
-                <div className="flex shrink-0 gap-1" role="radiogroup">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      role="radio"
-                      aria-checked={item.score === n}
-                      title={t.scoreLabels[n - 1]}
-                      onClick={() => update(item.key, { score: n })}
-                      className={`flex h-12 w-12 flex-col items-center justify-center rounded-md border text-sm font-semibold transition sm:w-16 ${
-                        item.score === n
-                          ? "border-transparent bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/20"
-                          : "border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50"
-                      }`}
-                    >
-                      {n}
-                      <span className={`hidden text-[10px] font-normal sm:block ${item.score === n ? "text-indigo-100" : "text-gray-400"}`}>
-                        {t.scoreLabels[n - 1]}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <RatingScale value={item.score} onChange={(n) => update(item.key, { score: n })} labels={t.scoreLabels} />
                 <textarea
                   value={item.notes}
                   onChange={(e) => update(item.key, { notes: e.target.value })}

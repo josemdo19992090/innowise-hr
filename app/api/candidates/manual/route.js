@@ -9,6 +9,11 @@ export const dynamic = "force-dynamic";
 // to type it in themselves. Gated by an active vacancy just like the PDF
 // upload, so a manual entry always has the same "evaluated against what?"
 // context as an AI one.
+//
+// The 0–100 score is never taken as a raw number from the client: it's
+// computed here from a set of criteria (name + 1–5 rating), same mechanism
+// as the interview checklist, so it's backed by something a recruiter can
+// look back at instead of a single subjective figure.
 export async function POST(req) {
   const key = await resolveStorageKey(req);
   const body = await req.json().catch(() => ({}));
@@ -17,11 +22,17 @@ export async function POST(req) {
   if (!vacancy) return Response.json({ error: "no_vacancy" }, { status: 400 });
 
   const name = String(body.name || "").trim();
-  const score = Math.round(Number(body.cvScore));
   if (!name) return Response.json({ error: "manual_missing_name" }, { status: 400 });
-  if (!Number.isFinite(score) || score < 0 || score > 100) {
-    return Response.json({ error: "manual_bad_score" }, { status: 400 });
+
+  const criteria = (Array.isArray(body.criteria) ? body.criteria : [])
+    .map((c) => ({ name: String(c?.name || "").trim(), score: Math.round(Number(c?.score)) }))
+    .filter((c) => c.name);
+  if (!criteria.length) return Response.json({ error: "manual_no_criteria" }, { status: 400 });
+  if (criteria.some((c) => !Number.isInteger(c.score) || c.score < 1 || c.score > 5)) {
+    return Response.json({ error: "manual_unscored_criteria" }, { status: 400 });
   }
+
+  const cvScore = Math.round((criteria.reduce((sum, c) => sum + c.score, 0) / criteria.length) * 20);
 
   const toList = (text) =>
     String(text || "")
@@ -37,7 +48,8 @@ export async function POST(req) {
     fileName: body.fileName ? String(body.fileName) : null,
     source: "manual",
     extractedName: name,
-    cvScore: score,
+    cvScore,
+    manualCriteria: criteria,
     summary: String(body.summary || "").trim(),
     strengths: toList(body.strengths),
     weaknesses: toList(body.weaknesses),
