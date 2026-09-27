@@ -22,7 +22,10 @@ export default function RatingScale({ value, onChange, max = 5, labels, anchors 
             .join(" · ")}
         </p>
       )}
-      <div className={`grid gap-1 ${max > 5 ? "grid-cols-5 sm:flex" : "flex shrink-0"}`} role="radiogroup">
+      {/* The clickable grid only makes sense on screen — on paper it's 5 or
+          10 buttons of noise for one fact. print:hidden here, replaced by a
+          plain "chosen score" line below that only exists for print. */}
+      <div className={`grid gap-1 print:hidden ${max > 5 ? "grid-cols-5 sm:flex" : "flex shrink-0"}`} role="radiogroup">
         {points.map((n) => (
           <button
             key={n}
@@ -46,6 +49,11 @@ export default function RatingScale({ value, onChange, max = 5, labels, anchors 
           </button>
         ))}
       </div>
+      <p className="hidden text-sm font-semibold text-gray-900 print:block">
+        {value == null
+          ? "—"
+          : `${value} / ${max}${labels?.[value - 1] || anchors?.[value] ? ` — ${titleFor(value)}` : ""}`}
+      </p>
     </div>
   );
 }

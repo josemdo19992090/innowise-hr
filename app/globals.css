@@ -22,3 +22,17 @@ body {
 ::selection {
   background: rgba(99, 102, 241, 0.25);
 }
+
+/* Printing a candidate's results (see app/candidates/[id]/page.js): most
+   elements that need hiding are tagged with Tailwind's `print:hidden`
+   directly. (Saved interviews render with the native `open` attribute set
+   by default instead of being force-opened via CSS for print — modern
+   Chromium paints closed <details> content through an internal
+   ::details-content box that a plain `display:block` override on the
+   child doesn't reliably reach, so `open` by default sidesteps that
+   rather than fighting it.) */
+@media print {
+  body {
+    background: #fff;
+  }
+}

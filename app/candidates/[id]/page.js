@@ -109,16 +109,34 @@ export default function CandidatePage() {
     }
   }
 
+  function handlePrint() {
+    // A nicer default filename in the "Save as PDF" dialog than the app's
+    // generic page title — restored right after so the tab title stays
+    // normal once the print dialog closes.
+    const previousTitle = document.title;
+    document.title = candidate.extractedName;
+    window.print();
+    document.title = previousTitle;
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 print:hidden">
         <BackLink t={t} />
-        <button
-          onClick={() => setConfirmingDelete(true)}
-          className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
-        >
-          {t.deleteOne}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrint}
+            className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+          >
+            {t.printButton}
+          </button>
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+          >
+            {t.deleteOne}
+          </button>
+        </div>
       </div>
 
       {/* CV evaluation */}
@@ -176,8 +194,10 @@ export default function CandidatePage() {
         <p className="mt-4 text-xs text-gray-500">{candidate.source === "manual" ? t.manualNote : t.disclaimer}</p>
       </section>
 
-      {/* Interview checklist */}
-      <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
+      {/* Interview checklist — a working draft for the next round, not a
+          record, so it's left out of print; the saved interviews below are
+          the actual results. */}
+      <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 print:hidden sm:p-6">
         <h2 className="text-lg font-semibold">{t.checklistTitle}</h2>
         <p className="mt-1 text-sm text-gray-600">
           {candidate.source === "manual" && candidate.suggestedChecklist.length === 0 ? t.checklistHintManual : t.checklistHint}
@@ -255,7 +275,7 @@ export default function CandidatePage() {
           <h2 className="text-lg font-semibold">{t.pastInterviews}</h2>
           <div className="mt-4 space-y-4">
             {interviews.map((iv) => (
-              <details key={iv.id} className="group rounded-lg border border-gray-200">
+              <details key={iv.id} open className="group rounded-lg border border-gray-200">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
                   <span className="text-sm text-gray-600">{new Date(iv.createdAt).toLocaleString(locale)}</span>
                   <span className="flex items-center gap-1.5 text-sm">

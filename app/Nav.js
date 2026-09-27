@@ -21,7 +21,7 @@ export default function Nav() {
   const showGuestNotice = authAvailable && !loading && !user;
 
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200/70 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-10 border-b border-gray-200/70 bg-white/80 backdrop-blur-md print:hidden">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
         <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-sm font-bold text-white shadow-md shadow-indigo-600/25">
