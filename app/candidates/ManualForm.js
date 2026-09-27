@@ -12,9 +12,25 @@ const nextKey = () => `criterion-${++keySeq}`;
 // criteria 1–5, same mechanism as the interview checklist, and the 0–100 CV
 // score is computed from that average, so it's backed by something instead
 // of being one subjective number.
-export default function ManualForm({ t, apiFetch, initialName = "", fileName = null, hint, onCancel, onCreated, onError }) {
+export default function ManualForm({
+  t,
+  apiFetch,
+  initialName = "",
+  initialCriteriaNames,
+  fileName = null,
+  hint,
+  onCancel,
+  onCreated,
+  onError,
+}) {
   const [name, setName] = useState(initialName);
-  const [criteria, setCriteria] = useState(() => t.manualDefaultCriteria.map((name) => ({ key: nextKey(), name, score: null })));
+  const [criteria, setCriteria] = useState(() =>
+    (initialCriteriaNames?.length ? initialCriteriaNames : t.manualDefaultCriteria).map((name) => ({
+      key: nextKey(),
+      name,
+      score: null,
+    }))
+  );
   const [summary, setSummary] = useState("");
   const [strengths, setStrengths] = useState("");
   const [weaknesses, setWeaknesses] = useState("");
@@ -24,7 +40,7 @@ export default function ManualForm({ t, apiFetch, initialName = "", fileName = n
   const named = criteria.filter((c) => c.name.trim());
   const scored = named.filter((c) => c.score);
   const avg = scored.length ? scored.reduce((sum, c) => sum + c.score, 0) / scored.length : null;
-  const cvScore = avg != null ? Math.round(avg * 20) : null;
+  const cvScore = avg != null ? Math.round(avg * 10) : null;
 
   const update = (key, patch) => {
     setError(null);
@@ -111,7 +127,7 @@ export default function ManualForm({ t, apiFetch, initialName = "", fileName = n
                   </button>
                 </div>
                 <div className="mt-2">
-                  <RatingScale value={c.score} onChange={(n) => update(c.key, { score: n })} labels={t.cvScoreLabels} />
+                  <RatingScale value={c.score} onChange={(n) => update(c.key, { score: n })} max={10} anchors={t.cvScoreAnchors} />
                 </div>
               </li>
             ))}

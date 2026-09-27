@@ -101,8 +101,24 @@ export default function CandidatesPage() {
     });
   }
 
+  // Reuse the most recently added manual candidate's criteria for this
+  // vacancy instead of always resetting to the generic defaults, so manual
+  // candidates stay comparable to each other on the same rubric.
+  function latestManualCriteriaNames() {
+    const withCriteria = (candidates || []).filter((c) => c.source === "manual" && c.criteriaNames?.length);
+    if (!withCriteria.length) return null;
+    return withCriteria.reduce((latest, c) => (c.createdAt > latest.createdAt ? c : latest)).criteriaNames;
+  }
+
   function openManualForm(opts = {}) {
-    setManualForm({ initialName: "", fileName: null, hint: undefined, rescueKey: null, ...opts });
+    setManualForm({
+      initialName: "",
+      fileName: null,
+      hint: undefined,
+      rescueKey: null,
+      initialCriteriaNames: latestManualCriteriaNames() || t.manualDefaultCriteria,
+      ...opts,
+    });
   }
 
   function onManualCreated(candidate) {
@@ -366,6 +382,7 @@ export default function CandidatesPage() {
           t={t}
           apiFetch={apiFetch}
           initialName={manualForm.initialName}
+          initialCriteriaNames={manualForm.initialCriteriaNames}
           fileName={manualForm.fileName}
           hint={manualForm.hint}
           onCancel={() => setManualForm(null)}

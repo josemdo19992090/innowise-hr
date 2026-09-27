@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import VacancyBanner from "../VacancyBanner";
+import ScoreComparisonChart from "../ScoreComparisonChart";
 
 export default function StatsPage() {
   const { t } = useT();
@@ -72,6 +73,15 @@ export default function StatsPage() {
           </ul>
         )}
       </section>
+
+      {stats?.scoreComparison?.length > 0 ? (
+        <ScoreComparisonChart t={t} data={stats.scoreComparison} />
+      ) : stats ? (
+        <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
+          <h2 className="text-lg font-semibold">{t.statsComparisonTitle}</h2>
+          <p className="mt-4 text-center text-sm text-gray-500">{t.statsComparisonEmpty}</p>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -24,6 +24,13 @@ export async function GET(req) {
       summary: c.summary,
       createdAt: c.createdAt,
       interviewScore: latestInterview[c.id]?.interviewScore ?? null,
+      // Lets the "add manually" form reuse the previous manual candidate's
+      // criteria for this vacancy, instead of always resetting to the
+      // generic defaults — so manually-scored candidates stay comparable to
+      // each other, not each judged on a different homemade rubric.
+      ...(c.source === "manual" && c.manualCriteria?.length
+        ? { criteriaNames: c.manualCriteria.map((cr) => cr.name) }
+        : {}),
     }))
     .sort((a, b) => b.cvScore - a.cvScore);
   return Response.json({

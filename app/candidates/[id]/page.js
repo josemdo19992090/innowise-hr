@@ -159,9 +159,9 @@ export default function CandidatePage() {
                 <li key={i} className="flex items-center gap-3 text-sm">
                   <span className="min-w-0 flex-1 truncate text-gray-700">{c.name}</span>
                   <div className="h-1.5 w-24 shrink-0 rounded-full bg-gray-200">
-                    <div className="h-1.5 rounded-full bg-indigo-500" style={{ width: `${(c.score / 5) * 100}%` }} />
+                    <div className="h-1.5 rounded-full bg-indigo-500" style={{ width: `${(c.score / 10) * 100}%` }} />
                   </div>
-                  <span className="w-8 shrink-0 text-right font-semibold tabular-nums text-gray-900">{c.score}/5</span>
+                  <span className="w-10 shrink-0 text-right font-semibold tabular-nums text-gray-900">{c.score}/10</span>
                 </li>
               ))}
             </ul>

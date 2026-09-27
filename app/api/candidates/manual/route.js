@@ -11,9 +11,10 @@ export const dynamic = "force-dynamic";
 // context as an AI one.
 //
 // The 0–100 score is never taken as a raw number from the client: it's
-// computed here from a set of criteria (name + 1–5 rating), same mechanism
-// as the interview checklist, so it's backed by something a recruiter can
-// look back at instead of a single subjective figure.
+// computed here from a set of criteria (name + 1–10 rating, "1 knows
+// nothing" .. "10 expert"), same idea as the interview checklist, so it's
+// backed by something a recruiter can look back at instead of a single
+// subjective figure.
 export async function POST(req) {
   const key = await resolveStorageKey(req);
   const body = await req.json().catch(() => ({}));
@@ -28,11 +29,11 @@ export async function POST(req) {
     .map((c) => ({ name: String(c?.name || "").trim(), score: Math.round(Number(c?.score)) }))
     .filter((c) => c.name);
   if (!criteria.length) return Response.json({ error: "manual_no_criteria" }, { status: 400 });
-  if (criteria.some((c) => !Number.isInteger(c.score) || c.score < 1 || c.score > 5)) {
+  if (criteria.some((c) => !Number.isInteger(c.score) || c.score < 1 || c.score > 10)) {
     return Response.json({ error: "manual_unscored_criteria" }, { status: 400 });
   }
 
-  const cvScore = Math.round((criteria.reduce((sum, c) => sum + c.score, 0) / criteria.length) * 20);
+  const cvScore = Math.round((criteria.reduce((sum, c) => sum + c.score, 0) / criteria.length) * 10);
 
   const toList = (text) =>
     String(text || "")
