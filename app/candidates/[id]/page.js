@@ -119,10 +119,19 @@ export default function CandidatePage() {
       <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold">{candidate.extractedName}</h1>
-            <p className="mt-1 truncate text-xs text-gray-500">
-              {t.detailFile}: {candidate.fileName}
-            </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold">{candidate.extractedName}</h1>
+              {candidate.source === "manual" && (
+                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                  {t.manualBadge}
+                </span>
+              )}
+            </div>
+            {candidate.fileName && (
+              <p className="mt-1 truncate text-xs text-gray-500">
+                {t.detailFile}: {candidate.fileName}
+              </p>
+            )}
           </div>
           <div className="text-right">
             <div className="mb-1 text-xs uppercase tracking-wide text-gray-500">{t.detailScore}</div>
@@ -136,13 +145,15 @@ export default function CandidatePage() {
           <EvidenceList title={t.detailStrengths} items={candidate.strengths} tone="green" />
           <EvidenceList title={t.detailWeaknesses} items={candidate.weaknesses} tone="amber" />
         </div>
-        <p className="mt-4 text-xs text-gray-500">{t.disclaimer}</p>
+        <p className="mt-4 text-xs text-gray-500">{candidate.source === "manual" ? t.manualNote : t.disclaimer}</p>
       </section>
 
       {/* Interview checklist */}
       <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <h2 className="text-lg font-semibold">{t.checklistTitle}</h2>
-        <p className="mt-1 text-sm text-gray-600">{t.checklistHint}</p>
+        <p className="mt-1 text-sm text-gray-600">
+          {candidate.source === "manual" && candidate.suggestedChecklist.length === 0 ? t.checklistHintManual : t.checklistHint}
+        </p>
 
         <ol className="mt-5 space-y-3">
           {items.map((item, idx) => (

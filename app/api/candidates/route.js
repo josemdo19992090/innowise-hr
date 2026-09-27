@@ -18,6 +18,7 @@ export async function GET(req) {
     .map((c) => ({
       id: c.id,
       fileName: c.fileName,
+      source: c.source || "ai",
       extractedName: c.extractedName,
       cvScore: c.cvScore,
       summary: c.summary,

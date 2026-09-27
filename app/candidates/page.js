@@ -7,6 +7,7 @@ import { useT, errorText } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../ScoreBadge";
 import ConfirmDialog from "../ConfirmDialog";
+import ManualForm from "./ManualForm";
 
 // Free-tier Gemini quotas are per-minute, so don't fire every file at once.
 const CONCURRENCY = 2;
@@ -22,6 +23,7 @@ export default function CandidatesPage() {
   const [selected, setSelected] = useState(() => new Set());
   const [confirmTarget, setConfirmTarget] = useState(null); // { ids, message }
   const [deleting, setDeleting] = useState(false);
+  const [manualForm, setManualForm] = useState(null); // { initialName, fileName, hint, rescueKey }
   const inputRef = useRef(null);
 
   const load = useCallback(async () => {
@@ -94,6 +96,18 @@ export default function CandidatesPage() {
       all: true,
       message: t.deleteConfirmAll.replace("{n}", candidates.length),
     });
+  }
+
+  function openManualForm(opts = {}) {
+    setManualForm({ initialName: "", fileName: null, hint: undefined, rescueKey: null, ...opts });
+  }
+
+  function onManualCreated(candidate) {
+    setCandidates((list) => [...list, candidate].sort((a, b) => b.cvScore - a.cvScore));
+    if (manualForm?.rescueKey) {
+      setUpload(manualForm.rescueKey, { status: "done", candidateName: candidate.extractedName });
+    }
+    setManualForm(null);
   }
 
   async function confirmDelete() {
@@ -169,6 +183,14 @@ export default function CandidatesPage() {
           </div>
         )}
 
+        {hasVacancy && (
+          <div className="mt-3 text-center sm:text-left">
+            <button onClick={() => openManualForm()} className="text-sm font-medium text-indigo-600 hover:underline">
+              {t.candOr} {t.candAddManual.toLowerCase()}
+            </button>
+          </div>
+        )}
+
         {uploads.length > 0 && (
           <ul className="mt-4 divide-y divide-gray-100 rounded-lg border border-gray-100 text-sm">
             {uploads.map((u) => (
@@ -185,6 +207,21 @@ export default function CandidatesPage() {
                   {u.status === "done" && `${t.candDone} — ${u.candidateName}`}
                   {u.status === "error" && errorText(t, u.error)}
                 </span>
+                {u.status === "error" && (
+                  <button
+                    onClick={() =>
+                      openManualForm({
+                        initialName: guessNameFromFile(u.name),
+                        fileName: u.name,
+                        hint: t.manualRescueHint,
+                        rescueKey: u.key,
+                      })
+                    }
+                    className="text-xs font-semibold text-indigo-600 hover:underline"
+                  >
+                    {t.candAddManual}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -263,10 +300,17 @@ export default function CandidatesPage() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/candidates/${c.id}`} className="font-medium text-gray-900 hover:text-indigo-700">
-                      {c.extractedName}
-                    </Link>
-                    <div className="truncate text-xs text-gray-400">{c.fileName}</div>
+                    <div className="flex items-center gap-1.5">
+                      <Link href={`/candidates/${c.id}`} className="font-medium text-gray-900 hover:text-indigo-700">
+                        {c.extractedName}
+                      </Link>
+                      {c.source === "manual" && (
+                        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                          {t.manualBadge}
+                        </span>
+                      )}
+                    </div>
+                    {c.fileName && <div className="truncate text-xs text-gray-400">{c.fileName}</div>}
                     <div className="mt-1 line-clamp-2 text-xs text-gray-600 md:hidden">{firstLine(c.summary)}</div>
                   </td>
                   <td className="px-4 py-3">
@@ -311,6 +355,18 @@ export default function CandidatesPage() {
           onConfirm={confirmDelete}
         />
       )}
+
+      {manualForm && (
+        <ManualForm
+          t={t}
+          apiFetch={apiFetch}
+          initialName={manualForm.initialName}
+          fileName={manualForm.fileName}
+          hint={manualForm.hint}
+          onCancel={() => setManualForm(null)}
+          onCreated={onManualCreated}
+        />
+      )}
     </div>
   );
 }
@@ -318,6 +374,10 @@ export default function CandidatesPage() {
 function firstLine(text = "") {
   const sentence = text.split(/(?<=[.!?])\s|\n/)[0];
   return sentence || text;
+}
+
+function guessNameFromFile(fileName) {
+  return fileName.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ").trim();
 }
 
 function StatusIcon({ status }) {
