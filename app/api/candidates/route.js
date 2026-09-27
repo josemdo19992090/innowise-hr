@@ -26,7 +26,19 @@ export async function GET(req) {
       interviewScore: latestInterview[c.id]?.interviewScore ?? null,
     }))
     .sort((a, b) => b.cvScore - a.cvScore);
-  return Response.json({ candidates, hasVacancy: Boolean(db.vacancy) });
+  return Response.json({
+    candidates,
+    hasVacancy: Boolean(db.vacancy),
+    vacancy: db.vacancy ? { summary: summarizeVacancy(db.vacancy.description) } : null,
+  });
+}
+
+// First meaningful line of the job description — with only one active
+// vacancy at a time, the recruiter needs a reminder of which role these
+// candidates were scored against without going back to the vacancy page.
+function summarizeVacancy(description) {
+  const firstLine = description.split("\n").map((l) => l.trim()).find(Boolean) || "";
+  return firstLine.length > 120 ? `${firstLine.slice(0, 120)}…` : firstLine;
 }
 
 // One PDF per request: the client uploads files in parallel and gets

@@ -82,7 +82,11 @@ export default function CandidatePage() {
       const body = await res.json();
       if (!res.ok) throw body;
       setData((d) => ({ ...d, interviews: [body.interview, ...d.interviews] }));
-      setItems(toItems(candidate.suggestedChecklist));
+      // Keep the competencies for a possible second round (panel interview,
+      // follow-up) and only clear the scoring — retyping the whole checklist
+      // from scratch was the main friction here, especially for manually
+      // added candidates, whose list starts empty.
+      setItems((list) => list.map((i) => ({ ...i, score: null, notes: "" })));
       setMessage({ type: "ok", text: `${t.interviewSaved} — ${body.interview.interviewScore.toFixed(1)} / 5` });
     } catch (err) {
       setMessage({ type: "error", text: errorText(t, err?.error ? err : { error: "network" }) });
@@ -273,7 +277,7 @@ export default function CandidatePage() {
 
       {confirmingDelete && (
         <ConfirmDialog
-          message={t.deleteConfirmOne}
+          message={t.deleteConfirmOne(candidate.extractedName)}
           confirmLabel={t.deleteConfirmButton}
           cancelLabel={t.deleteCancelButton}
           busyLabel={t.deleting}

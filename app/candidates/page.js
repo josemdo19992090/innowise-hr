@@ -7,6 +7,7 @@ import { useT, errorText } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../ScoreBadge";
 import ConfirmDialog from "../ConfirmDialog";
+import VacancyBanner from "../VacancyBanner";
 import ManualForm from "./ManualForm";
 
 // Free-tier Gemini quotas are per-minute, so don't fire every file at once.
@@ -18,6 +19,7 @@ export default function CandidatesPage() {
   const apiFetch = useApiFetch();
   const [candidates, setCandidates] = useState(null);
   const [hasVacancy, setHasVacancy] = useState(true);
+  const [vacancy, setVacancy] = useState(null);
   const [uploads, setUploads] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [selected, setSelected] = useState(() => new Set());
@@ -30,6 +32,7 @@ export default function CandidatesPage() {
     const data = await apiFetch("/api/candidates").then((r) => r.json());
     setCandidates(data.candidates);
     setHasVacancy(data.hasVacancy);
+    setVacancy(data.vacancy);
   }, [apiFetch]);
 
   useEffect(() => {
@@ -81,20 +84,20 @@ export default function CandidatesPage() {
     setSelected((set) => (set.size === candidates.length ? new Set() : new Set(candidates.map((c) => c.id))));
   }
 
-  function askDeleteOne(id, e) {
+  function askDeleteOne(candidate, e) {
     e.stopPropagation();
-    setConfirmTarget({ ids: [id], message: t.deleteConfirmOne });
+    setConfirmTarget({ ids: [candidate.id], message: t.deleteConfirmOne(candidate.extractedName) });
   }
 
   function askDeleteSelected() {
-    setConfirmTarget({ ids: [...selected], message: t.deleteConfirmSelected.replace("{n}", selected.size) });
+    setConfirmTarget({ ids: [...selected], message: t.deleteConfirmSelected(selected.size) });
   }
 
   function askDeleteAll() {
     setConfirmTarget({
       ids: candidates.map((c) => c.id),
       all: true,
-      message: t.deleteConfirmAll.replace("{n}", candidates.length),
+      message: t.deleteConfirmAll(candidates.length),
     });
   }
 
@@ -134,6 +137,8 @@ export default function CandidatesPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{t.candTitle}</h1>
+
+      <VacancyBanner t={t} vacancy={vacancy} />
 
       <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <h2 className="font-semibold">{t.candUploadTitle}</h2>
@@ -327,7 +332,7 @@ export default function CandidatesPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
-                      onClick={(e) => askDeleteOne(c.id, e)}
+                      onClick={(e) => askDeleteOne(c, e)}
                       title={t.deleteOne}
                       aria-label={t.deleteOne}
                       className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600"

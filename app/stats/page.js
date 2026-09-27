@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
+import VacancyBanner from "../VacancyBanner";
 
 export default function StatsPage() {
   const { t } = useT();
@@ -20,6 +21,8 @@ export default function StatsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{t.statsTitle}</h1>
+
+      <VacancyBanner t={t} vacancy={stats?.vacancy} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Tile label={t.statsInterviews} value={stats?.totalInterviews} />
@@ -53,6 +56,11 @@ export default function StatsPage() {
                     </span>
                   </span>
                 </div>
+                {c.variants?.length > 1 && (
+                  <p className="mt-0.5 truncate text-xs text-gray-400" title={c.variants.join(" · ")}>
+                    {t.statsVariants(c.variants.length)}: {c.variants.join(" · ")}
+                  </p>
+                )}
                 <div className="mt-1.5 h-2 rounded-full bg-gray-100">
                   <div
                     className={`h-2 rounded-full ${c.average < 2.5 ? "bg-red-500" : c.average < 3.5 ? "bg-amber-500" : "bg-green-500"}`}
