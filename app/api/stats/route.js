@@ -23,20 +23,24 @@ export async function GET(req) {
     if (!prev || prev.createdAt < i.createdAt) latestInterview[i.candidateId] = i;
   }
 
-  // CV score vs interview score, one row per candidate who's been through
-  // both steps — the only place the two numbers sit side by side, so a
-  // recruiter can see whether the CV screen is actually predicting how
-  // people do face to face.
-  const scoreComparison = db.candidates
+  // Final ranking: every interviewed candidate, CV score and interview
+  // score side by side, ordered by their average — the closest thing this
+  // tool has to "who do we move forward with", built from both signals
+  // instead of just the CV screen.
+  const interviewRanking = db.candidates
     .filter((c) => latestInterview[c.id])
-    .map((c) => ({
-      name: c.extractedName,
-      cvScore: c.cvScore,
-      interviewScore: latestInterview[c.id].interviewScore,
-      source: c.source || "ai",
-    }))
-    .sort((a, b) => b.cvScore - a.cvScore)
-    .slice(0, 15);
+    .map((c) => {
+      const interviewScore = latestInterview[c.id].interviewScore;
+      return {
+        id: c.id,
+        name: c.extractedName,
+        cvScore: c.cvScore,
+        interviewScore,
+        overallScore: Math.round((c.cvScore + interviewScore) / 2),
+        source: c.source || "ai",
+      };
+    })
+    .sort((a, b) => b.overallScore - a.overallScore);
 
   return Response.json({
     totalInterviews: db.interviews.length,
@@ -44,7 +48,7 @@ export async function GET(req) {
     avgCvScore: avg(db.candidates.map((c) => c.cvScore)),
     avgInterviewScore: avg(db.interviews.map((i) => i.interviewScore)),
     weakestCompetencies: competencies,
-    scoreComparison,
+    interviewRanking,
     vacancy: db.vacancy ? { summary: summarize(db.vacancy.description) } : null,
   });
 }

@@ -64,7 +64,8 @@ export default function CandidatePage() {
 
   const named = items.filter((i) => i.name.trim());
   const scored = named.filter((i) => i.score);
-  const average = scored.length ? scored.reduce((s, i) => s + i.score, 0) / scored.length : null;
+  const avg = scored.length ? scored.reduce((s, i) => s + i.score, 0) / scored.length : null;
+  const interviewScorePreview = avg != null ? Math.round(avg * 10) : null;
 
   async function save() {
     if (!named.length) return setMessage({ type: "error", text: t.errNoItems });
@@ -88,7 +89,7 @@ export default function CandidatePage() {
       // from scratch was the main friction here, especially for manually
       // added candidates, whose list starts empty.
       setItems((list) => list.map((i) => ({ ...i, score: null, notes: "" })));
-      setMessage({ type: "ok", text: `${t.interviewSaved} — ${body.interview.interviewScore.toFixed(1)} / 5` });
+      setMessage({ type: "ok", text: `${t.interviewSaved} — ${body.interview.interviewScore} / 100` });
     } catch (err) {
       setMessage({ type: "error", text: errorText(t, err?.error ? err : { error: "network" }) });
     } finally {
@@ -207,7 +208,7 @@ export default function CandidatePage() {
               </div>
 
               <div className="mt-3 flex flex-col gap-3 pl-7 lg:flex-row lg:items-start">
-                <RatingScale value={item.score} onChange={(n) => update(item.key, { score: n })} labels={t.scoreLabels} />
+                <RatingScale value={item.score} onChange={(n) => update(item.key, { score: n })} max={10} anchors={t.cvScoreAnchors} />
                 <textarea
                   value={item.notes}
                   onChange={(e) => update(item.key, { notes: e.target.value })}
@@ -236,8 +237,8 @@ export default function CandidatePage() {
             {saving ? t.saving : t.saveInterview}
           </button>
           <span className="text-sm text-gray-600">
-            {t.currentAverage}:{" "}
-            <strong className="tabular-nums">{average != null ? average.toFixed(1) : "—"}</strong> / 5
+            {t.currentAverage}: <strong className="tabular-nums">{interviewScorePreview ?? "—"}</strong> / 100
+            {avg != null && <span className="ml-1 text-xs text-gray-500">({t.manualScoreFormula(avg.toFixed(1))})</span>}
             <span className="ml-1 text-gray-400">
               ({scored.length}/{named.length})
             </span>
@@ -257,14 +258,14 @@ export default function CandidatePage() {
               <details key={iv.id} className="group rounded-lg border border-gray-200">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
                   <span className="text-sm text-gray-600">{new Date(iv.createdAt).toLocaleString(locale)}</span>
-                  <span className="text-sm">
-                    {t.interviewScore}: <strong className="tabular-nums">{iv.interviewScore.toFixed(1)}</strong> / 5
+                  <span className="flex items-center gap-1.5 text-sm">
+                    {t.interviewScore}: <ScoreBadge score={iv.interviewScore} />
                   </span>
                 </summary>
                 <ul className="divide-y divide-gray-100 border-t border-gray-100 text-sm">
                   {iv.items.map((it, i) => (
                     <li key={i} className="flex gap-3 px-4 py-2">
-                      <span className="w-6 shrink-0 font-semibold tabular-nums text-indigo-700">{it.score}</span>
+                      <span className="w-10 shrink-0 font-semibold tabular-nums text-indigo-700">{it.score}/10</span>
                       <span className="min-w-0">
                         <span className="font-medium">{it.name}</span>
                         {it.notes && <span className="block text-gray-500">{it.notes}</span>}

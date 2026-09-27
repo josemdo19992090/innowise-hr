@@ -19,12 +19,14 @@ export async function POST(req) {
     .filter((i) => i.name);
 
   if (clean.length === 0) return Response.json({ error: "no_items" }, { status: 400 });
-  if (clean.some((i) => !Number.isInteger(i.score) || i.score < 1 || i.score > 5)) {
+  if (clean.some((i) => !Number.isInteger(i.score) || i.score < 1 || i.score > 10)) {
     return Response.json({ error: "unscored_items" }, { status: 400 });
   }
 
-  const interviewScore =
-    Math.round((clean.reduce((s, i) => s + i.score, 0) / clean.length) * 100) / 100;
+  // Same mechanism as the CV score: each competency rated 1–10, the
+  // interview score is their average × 10 — both end up on the same 0–100
+  // scale, comparable to each other and to the CV score.
+  const interviewScore = Math.round((clean.reduce((s, i) => s + i.score, 0) / clean.length) * 10);
 
   const result = await updateDb(key, (db) => {
     if (!db.candidates.some((c) => c.id === candidateId)) return null;

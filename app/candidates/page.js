@@ -336,15 +336,17 @@ export default function CandidatesPage() {
                   </td>
                   <td className="px-4 py-3">
                     <ScoreBadge score={c.cvScore} />
-                    <div className="mt-1 text-xs text-gray-500 sm:hidden">
-                      {t.colInterview}: {c.interviewScore != null ? `${c.interviewScore.toFixed(1)} / 5` : "—"}
-                    </div>
+                    {c.interviewScore != null && (
+                      <div className="mt-1 sm:hidden">
+                        <ScoreBadge score={c.interviewScore} />
+                      </div>
+                    )}
                   </td>
                   <td className="hidden px-4 py-3 text-gray-600 md:table-cell">
                     <span className="line-clamp-2">{firstLine(c.summary)}</span>
                   </td>
-                  <td className="hidden px-4 py-3 text-gray-700 sm:table-cell">
-                    {c.interviewScore != null ? `${c.interviewScore.toFixed(1)} / 5` : "—"}
+                  <td className="hidden px-4 py-3 sm:table-cell">
+                    {c.interviewScore != null ? <ScoreBadge score={c.interviewScore} /> : <span className="text-gray-400">—</span>}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button

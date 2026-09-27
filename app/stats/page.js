@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import VacancyBanner from "../VacancyBanner";
-import ScoreComparisonChart from "../ScoreComparisonChart";
+import ScoreBadge from "../ScoreBadge";
+import CandidateRanking from "../CandidateRanking";
 
 export default function StatsPage() {
   const { t } = useT();
@@ -29,7 +30,7 @@ export default function StatsPage() {
         <Tile label={t.statsInterviews} value={stats?.totalInterviews} />
         <Tile label={t.statsCandidates} value={stats?.totalCandidates} />
         <Tile label={t.statsAvgCv} value={stats && fmt(stats.avgCvScore, 0)} suffix="/100" />
-        <Tile label={t.statsAvgInterview} value={stats && fmt(stats.avgInterviewScore, 1)} suffix="/5" />
+        <Tile label={t.statsAvgInterview} value={stats && fmt(stats.avgInterviewScore, 0)} suffix="/100" />
       </div>
 
       <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
@@ -51,7 +52,7 @@ export default function StatsPage() {
                 <div className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate font-medium" title={c.name}>{c.name}</span>
                   <span className="shrink-0 tabular-nums text-gray-600">
-                    <strong className="text-gray-900">{c.average.toFixed(1)}</strong> / 5
+                    <strong className="text-gray-900">{c.average.toFixed(1)}</strong> / 10
                     <span className="ml-2 text-xs text-gray-400">
                       ({t.statsTimes}: {c.count})
                     </span>
@@ -64,8 +65,8 @@ export default function StatsPage() {
                 )}
                 <div className="mt-1.5 h-2 rounded-full bg-gray-100">
                   <div
-                    className={`h-2 rounded-full ${c.average < 2.5 ? "bg-red-500" : c.average < 3.5 ? "bg-amber-500" : "bg-green-500"}`}
-                    style={{ width: `${(c.average / 5) * 100}%` }}
+                    className={`h-2 rounded-full ${c.average < 5 ? "bg-red-500" : c.average < 7 ? "bg-amber-500" : "bg-green-500"}`}
+                    style={{ width: `${(c.average / 10) * 100}%` }}
                   />
                 </div>
               </li>
@@ -74,14 +75,7 @@ export default function StatsPage() {
         )}
       </section>
 
-      {stats?.scoreComparison?.length > 0 ? (
-        <ScoreComparisonChart t={t} data={stats.scoreComparison} />
-      ) : stats ? (
-        <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
-          <h2 className="text-lg font-semibold">{t.statsComparisonTitle}</h2>
-          <p className="mt-4 text-center text-sm text-gray-500">{t.statsComparisonEmpty}</p>
-        </section>
-      ) : null}
+      {stats && <CandidateRanking t={t} candidates={stats.interviewRanking} />}
     </div>
   );
 }
