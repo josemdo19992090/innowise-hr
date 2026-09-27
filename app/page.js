@@ -59,13 +59,13 @@ export default function VacancyPage() {
           placeholder={loading ? t.loading : t.vacancyPlaceholder}
           disabled={loading}
           rows={14}
-          className="w-full resize-y rounded-lg border border-gray-300 p-3 text-sm leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          className="w-full resize-y rounded-lg border border-gray-300 p-3 text-base leading-relaxed sm:text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
         />
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             onClick={save}
             disabled={saving || loading}
-            className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-md shadow-indigo-600/20 transition hover:shadow-lg hover:shadow-indigo-600/30 disabled:opacity-50"
+            className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-indigo-600/20 transition hover:shadow-lg hover:shadow-indigo-600/30 disabled:opacity-50"
           >
             {saving ? t.vacancySaving : t.vacancySave}
           </button>

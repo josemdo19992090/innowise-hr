@@ -28,7 +28,7 @@ export default function Nav() {
             <Link
               key={l.href}
               href={l.href}
-              className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 l.active
                   ? "bg-indigo-50 text-indigo-700"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
@@ -44,7 +44,7 @@ export default function Nav() {
               key={code}
               onClick={() => setLang(code)}
               aria-pressed={lang === code}
-              className={`rounded px-2.5 py-1 uppercase transition-colors ${
+              className={`rounded px-3 py-1.5 uppercase transition-colors ${
                 lang === code
                   ? "bg-gradient-to-br from-indigo-600 to-violet-600 text-white"
                   : "text-gray-500 hover:text-gray-900"

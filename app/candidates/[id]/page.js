@@ -130,7 +130,7 @@ export default function CandidatePage() {
                     value={item.name}
                     onChange={(e) => update(item.key, { name: e.target.value })}
                     placeholder={t.itemNamePlaceholder}
-                    className="w-full rounded-md border border-transparent px-2 py-1.5 font-medium hover:border-gray-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="w-full overflow-hidden text-ellipsis rounded-md border border-transparent px-2 py-1.5 text-base font-medium hover:border-gray-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
                   />
                   {item.reason && <p className="px-2 text-xs text-gray-500">{item.reason}</p>}
                 </div>
@@ -138,7 +138,7 @@ export default function CandidatePage() {
                   onClick={() => remove(item.key)}
                   title={t.removeItem}
                   aria-label={t.removeItem}
-                  className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600"
                 >
                   ✕
                 </button>
@@ -171,7 +171,7 @@ export default function CandidatePage() {
                   onChange={(e) => update(item.key, { notes: e.target.value })}
                   placeholder={t.notesPlaceholder}
                   rows={1}
-                  className="min-h-12 w-full flex-1 resize-y rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  className="min-h-12 w-full flex-1 resize-y rounded-md border border-gray-200 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
                 />
               </div>
             </li>
@@ -189,7 +189,7 @@ export default function CandidatePage() {
           <button
             onClick={save}
             disabled={saving}
-            className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-indigo-600/20 transition hover:shadow-lg hover:shadow-indigo-600/30 disabled:opacity-50"
+            className="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-3 text-sm font-medium text-white shadow-md shadow-indigo-600/20 transition hover:shadow-lg hover:shadow-indigo-600/30 disabled:opacity-50"
           >
             {saving ? t.saving : t.saveInterview}
           </button>

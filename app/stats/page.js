@@ -43,7 +43,7 @@ export default function StatsPage() {
             {stats.weakestCompetencies.map((c) => (
               <li key={c.name}>
                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 truncate font-medium">{c.name}</span>
+                  <span className="min-w-0 truncate font-medium" title={c.name}>{c.name}</span>
                   <span className="shrink-0 tabular-nums text-gray-600">
                     <strong className="text-gray-900">{c.average.toFixed(1)}</strong> / 5
                     <span className="ml-2 text-xs text-gray-400">
