@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useT, errorText } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../../ScoreBadge";
+import ConfirmDialog from "../../ConfirmDialog";
 
 let keySeq = 0;
 const nextKey = () => `item-${++keySeq}`;
@@ -15,6 +16,7 @@ const toItems = (checklist) =>
 
 export default function CandidatePage() {
   const { id } = useParams();
+  const router = useRouter();
   const { t, lang } = useT();
   const apiFetch = useApiFetch();
   const [data, setData] = useState(null);
@@ -22,6 +24,8 @@ export default function CandidatePage() {
   const [items, setItems] = useState([]);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     apiFetch(`/api/candidates/${id}`).then(async (r) => {
@@ -89,9 +93,27 @@ export default function CandidatePage() {
 
   const locale = lang === "ru" ? "ru-RU" : "en-GB";
 
+  async function confirmDeleteCandidate() {
+    setDeleting(true);
+    try {
+      await apiFetch(`/api/candidates/${id}`, { method: "DELETE" });
+      router.push("/candidates");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <BackLink t={t} />
+      <div className="flex items-center justify-between gap-3">
+        <BackLink t={t} />
+        <button
+          onClick={() => setConfirmingDelete(true)}
+          className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+        >
+          {t.deleteOne}
+        </button>
+      </div>
 
       {/* CV evaluation */}
       <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
@@ -236,6 +258,18 @@ export default function CandidatePage() {
             ))}
           </div>
         </section>
+      )}
+
+      {confirmingDelete && (
+        <ConfirmDialog
+          message={t.deleteConfirmOne}
+          confirmLabel={t.deleteConfirmButton}
+          cancelLabel={t.deleteCancelButton}
+          busyLabel={t.deleting}
+          busy={deleting}
+          onCancel={() => setConfirmingDelete(false)}
+          onConfirm={confirmDeleteCandidate}
+        />
       )}
     </div>
   );

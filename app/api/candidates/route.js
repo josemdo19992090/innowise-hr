@@ -74,6 +74,25 @@ export async function POST(req) {
   return Response.json({ candidate });
 }
 
+// Bulk delete: { ids: [...] } removes just those, { all: true } clears
+// every candidate (and their interviews) for the current user/guest.
+export async function DELETE(req) {
+  const key = await resolveStorageKey(req);
+  const { ids, all } = await req.json().catch(() => ({}));
+  if (!all && (!Array.isArray(ids) || ids.length === 0)) {
+    return Response.json({ error: "bad_request" }, { status: 400 });
+  }
+
+  const deleted = await updateDb(key, (db) => {
+    const toDelete = all ? new Set(db.candidates.map((c) => c.id)) : new Set(ids);
+    const before = db.candidates.length;
+    db.candidates = db.candidates.filter((c) => !toDelete.has(c.id));
+    db.interviews = db.interviews.filter((i) => !toDelete.has(i.candidateId));
+    return before - db.candidates.length;
+  });
+  return Response.json({ deleted });
+}
+
 function fail(code, status, detail) {
   return Response.json({ error: code, detail }, { status });
 }

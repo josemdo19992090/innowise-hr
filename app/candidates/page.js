@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useT, errorText } from "@/lib/i18n";
 import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../ScoreBadge";
+import ConfirmDialog from "../ConfirmDialog";
 
 // Free-tier Gemini quotas are per-minute, so don't fire every file at once.
 const CONCURRENCY = 2;
@@ -18,6 +19,9 @@ export default function CandidatesPage() {
   const [hasVacancy, setHasVacancy] = useState(true);
   const [uploads, setUploads] = useState([]);
   const [dragging, setDragging] = useState(false);
+  const [selected, setSelected] = useState(() => new Set());
+  const [confirmTarget, setConfirmTarget] = useState(null); // { ids, message }
+  const [deleting, setDeleting] = useState(false);
   const inputRef = useRef(null);
 
   const load = useCallback(async () => {
@@ -61,6 +65,57 @@ export default function CandidatesPage() {
   }
 
   const busy = uploads.some((u) => u.status === "queued" || u.status === "processing");
+
+  function toggleOne(id, e) {
+    e.stopPropagation();
+    setSelected((set) => {
+      const next = new Set(set);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected((set) => (set.size === candidates.length ? new Set() : new Set(candidates.map((c) => c.id))));
+  }
+
+  function askDeleteOne(id, e) {
+    e.stopPropagation();
+    setConfirmTarget({ ids: [id], message: t.deleteConfirmOne });
+  }
+
+  function askDeleteSelected() {
+    setConfirmTarget({ ids: [...selected], message: t.deleteConfirmSelected.replace("{n}", selected.size) });
+  }
+
+  function askDeleteAll() {
+    setConfirmTarget({
+      ids: candidates.map((c) => c.id),
+      all: true,
+      message: t.deleteConfirmAll.replace("{n}", candidates.length),
+    });
+  }
+
+  async function confirmDelete() {
+    setDeleting(true);
+    try {
+      await apiFetch("/api/candidates", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(confirmTarget.all ? { all: true } : { ids: confirmTarget.ids }),
+      });
+      const removed = new Set(confirmTarget.ids);
+      setCandidates((list) => list.filter((c) => !removed.has(c.id)));
+      setSelected((set) => {
+        const next = new Set(set);
+        removed.forEach((id) => next.delete(id));
+        return next;
+      });
+      setConfirmTarget(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -136,6 +191,40 @@ export default function CandidatesPage() {
         )}
       </section>
 
+      {candidates && candidates.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200/70 bg-white px-4 py-2.5 text-sm shadow-sm shadow-gray-200/60">
+          <label className="flex items-center gap-2 text-gray-600">
+            <input
+              type="checkbox"
+              checked={selected.size === candidates.length}
+              onChange={toggleAll}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            {t.selectAll}
+          </label>
+          {selected.size > 0 && (
+            <span className="text-gray-400">
+              {t.selectedCount}: {selected.size}
+            </span>
+          )}
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={askDeleteSelected}
+              disabled={selected.size === 0}
+              className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {t.deleteSelected} {selected.size > 0 && `(${selected.size})`}
+            </button>
+            <button
+              onClick={askDeleteAll}
+              className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+            >
+              {t.deleteAll}
+            </button>
+          </div>
+        </div>
+      )}
+
       <section className="overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm shadow-gray-200/60">
         {candidates === null ? (
           <div className="space-y-3 p-6">
@@ -149,21 +238,30 @@ export default function CandidatesPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
-                <th className="w-10 px-4 py-3">#</th>
+                <th className="w-10 px-4 py-3"></th>
                 <th className="px-4 py-3">{t.colName}</th>
                 <th className="px-4 py-3">{t.colScore}</th>
                 <th className="hidden px-4 py-3 md:table-cell">{t.colSummary}</th>
                 <th className="hidden px-4 py-3 sm:table-cell">{t.colInterview}</th>
+                <th className="w-10 px-4 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {candidates.map((c, i) => (
+              {candidates.map((c) => (
                 <tr
                   key={c.id}
                   onClick={() => router.push(`/candidates/${c.id}`)}
                   className="cursor-pointer align-top hover:bg-indigo-50/50"
                 >
-                  <td className="px-4 py-3 text-gray-400">{i + 1}</td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(c.id)}
+                      onChange={(e) => toggleOne(c.id, e)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <Link href={`/candidates/${c.id}`} className="font-medium text-gray-900 hover:text-indigo-700">
                       {c.extractedName}
@@ -183,6 +281,16 @@ export default function CandidatesPage() {
                   <td className="hidden px-4 py-3 text-gray-700 sm:table-cell">
                     {c.interviewScore != null ? `${c.interviewScore.toFixed(1)} / 5` : "—"}
                   </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={(e) => askDeleteOne(c.id, e)}
+                      title={t.deleteOne}
+                      aria-label={t.deleteOne}
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600"
+                    >
+                      ✕
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -191,6 +299,18 @@ export default function CandidatesPage() {
       </section>
 
       <p className="text-xs text-gray-500">{t.disclaimer}</p>
+
+      {confirmTarget && (
+        <ConfirmDialog
+          message={confirmTarget.message}
+          confirmLabel={t.deleteConfirmButton}
+          cancelLabel={t.deleteCancelButton}
+          busyLabel={t.deleting}
+          busy={deleting}
+          onCancel={() => setConfirmTarget(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
     </div>
   );
 }
