@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useT, errorText } from "@/lib/i18n";
+import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../ScoreBadge";
 
 // Free-tier Gemini quotas are per-minute, so don't fire every file at once.
@@ -12,6 +13,7 @@ const CONCURRENCY = 2;
 export default function CandidatesPage() {
   const { t } = useT();
   const router = useRouter();
+  const apiFetch = useApiFetch();
   const [candidates, setCandidates] = useState(null);
   const [hasVacancy, setHasVacancy] = useState(true);
   const [uploads, setUploads] = useState([]);
@@ -19,10 +21,10 @@ export default function CandidatesPage() {
   const inputRef = useRef(null);
 
   const load = useCallback(async () => {
-    const data = await fetch("/api/candidates").then((r) => r.json());
+    const data = await apiFetch("/api/candidates").then((r) => r.json());
     setCandidates(data.candidates);
     setHasVacancy(data.hasVacancy);
-  }, []);
+  }, [apiFetch]);
 
   useEffect(() => {
     load();
@@ -45,7 +47,7 @@ export default function CandidatesPage() {
         try {
           const form = new FormData();
           form.append("file", job.file);
-          const res = await fetch("/api/candidates", { method: "POST", body: form });
+          const res = await apiFetch("/api/candidates", { method: "POST", body: form });
           const data = await res.json().catch(() => ({ error: "generic" }));
           if (!res.ok) throw data;
           setUpload(job.key, { status: "done", candidateName: data.candidate.extractedName });

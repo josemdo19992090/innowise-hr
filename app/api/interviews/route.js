@@ -1,8 +1,10 @@
 import { updateDb, newId } from "@/lib/db";
+import { resolveStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req) {
+  const key = await resolveStorageKey(req);
   const { candidateId, items } = await req.json().catch(() => ({}));
   if (!candidateId || !Array.isArray(items)) {
     return Response.json({ error: "bad_request" }, { status: 400 });
@@ -24,7 +26,7 @@ export async function POST(req) {
   const interviewScore =
     Math.round((clean.reduce((s, i) => s + i.score, 0) / clean.length) * 100) / 100;
 
-  const result = await updateDb((db) => {
+  const result = await updateDb(key, (db) => {
     if (!db.candidates.some((c) => c.id === candidateId)) return null;
     const interview = {
       id: newId(),

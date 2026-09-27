@@ -1,12 +1,14 @@
 import { readDb, updateDb, newId } from "@/lib/db";
 import { pdfToText } from "@/lib/pdf";
 import { evaluateCv, AiError } from "@/lib/gemini";
+import { resolveStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-export async function GET() {
-  const db = await readDb();
+export async function GET(req) {
+  const key = await resolveStorageKey(req);
+  const db = await readDb(key);
   const latestInterview = {};
   for (const i of db.interviews) {
     const prev = latestInterview[i.candidateId];
@@ -29,6 +31,7 @@ export async function GET() {
 // One PDF per request: the client uploads files in parallel and gets
 // per-file progress and errors.
 export async function POST(req) {
+  const key = await resolveStorageKey(req);
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   if (!file || typeof file === "string") return fail("no_file", 400);
@@ -38,7 +41,7 @@ export async function POST(req) {
     return fail("not_pdf", 400);
   }
 
-  const { vacancy } = await readDb();
+  const { vacancy } = await readDb(key);
   if (!vacancy) return fail("no_vacancy", 400);
 
   let cvText;
@@ -65,7 +68,7 @@ export async function POST(req) {
     ...evaluation,
     createdAt: new Date().toISOString(),
   };
-  await updateDb((db) => {
+  await updateDb(key, (db) => {
     db.candidates.push(candidate);
   });
   return Response.json({ candidate });

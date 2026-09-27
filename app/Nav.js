@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n";
+import { useSession } from "@/lib/session";
+import AuthWidget from "./AuthWidget";
 
 export default function Nav() {
   const { t, lang, setLang } = useT();
+  const { authAvailable, user, loading } = useSession();
   const pathname = usePathname();
 
   const links = [
@@ -13,6 +16,8 @@ export default function Nav() {
     { href: "/candidates", label: t.navCandidates, active: pathname.startsWith("/candidates") },
     { href: "/stats", label: t.navStats, active: pathname === "/stats" },
   ];
+
+  const showGuestNotice = authAvailable && !loading && !user;
 
   return (
     <header className="sticky top-0 z-10 border-b border-gray-200/70 bg-white/80 backdrop-blur-md">
@@ -38,23 +43,31 @@ export default function Nav() {
             </Link>
           ))}
         </nav>
-        <div className="ml-auto flex rounded-md border border-gray-200 bg-white p-0.5 text-xs font-semibold">
-          {["ru", "en"].map((code) => (
-            <button
-              key={code}
-              onClick={() => setLang(code)}
-              aria-pressed={lang === code}
-              className={`rounded px-3 py-1.5 uppercase transition-colors ${
-                lang === code
-                  ? "bg-gradient-to-br from-indigo-600 to-violet-600 text-white"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              {code}
-            </button>
-          ))}
+        <div className="ml-auto flex items-center gap-3">
+          <AuthWidget />
+          <div className="flex rounded-md border border-gray-200 bg-white p-0.5 text-xs font-semibold">
+            {["ru", "en"].map((code) => (
+              <button
+                key={code}
+                onClick={() => setLang(code)}
+                aria-pressed={lang === code}
+                className={`rounded px-3 py-1.5 uppercase transition-colors ${
+                  lang === code
+                    ? "bg-gradient-to-br from-indigo-600 to-violet-600 text-white"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                {code}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+      {showGuestNotice && (
+        <div className="border-t border-amber-200 bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-800">
+          {t.authGuestNotice}
+        </div>
+      )}
     </header>
   );
 }

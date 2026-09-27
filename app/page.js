@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useT, errorText } from "@/lib/i18n";
+import { useApiFetch } from "@/lib/session";
 
 export default function VacancyPage() {
   const { t, lang } = useT();
+  const apiFetch = useApiFetch();
   const [description, setDescription] = useState("");
   const [updatedAt, setUpdatedAt] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ export default function VacancyPage() {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    fetch("/api/vacancy")
+    apiFetch("/api/vacancy")
       .then((r) => r.json())
       .then(({ vacancy }) => {
         if (vacancy) {
@@ -22,14 +24,14 @@ export default function VacancyPage() {
         }
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [apiFetch]);
 
   async function save() {
     setMessage(null);
     if (!description.trim()) return setMessage({ type: "error", text: t.vacancyEmpty });
     setSaving(true);
     try {
-      const res = await fetch("/api/vacancy", {
+      const res = await apiFetch("/api/vacancy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description }),

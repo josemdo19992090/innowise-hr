@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useT, errorText } from "@/lib/i18n";
+import { useApiFetch } from "@/lib/session";
 import ScoreBadge from "../../ScoreBadge";
 
 let keySeq = 0;
@@ -15,6 +16,7 @@ const toItems = (checklist) =>
 export default function CandidatePage() {
   const { id } = useParams();
   const { t, lang } = useT();
+  const apiFetch = useApiFetch();
   const [data, setData] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [items, setItems] = useState([]);
@@ -22,13 +24,13 @@ export default function CandidatePage() {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/candidates/${id}`).then(async (r) => {
+    apiFetch(`/api/candidates/${id}`).then(async (r) => {
       if (!r.ok) return setNotFound(true);
       const d = await r.json();
       setData(d);
       setItems(toItems(d.candidate.suggestedChecklist));
     });
-  }, [id]);
+  }, [id, apiFetch]);
 
   if (notFound)
     return (
@@ -65,7 +67,7 @@ export default function CandidatePage() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/interviews", {
+      const res = await apiFetch("/api/interviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

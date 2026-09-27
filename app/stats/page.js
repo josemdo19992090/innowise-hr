@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
+import { useApiFetch } from "@/lib/session";
 
 export default function StatsPage() {
   const { t } = useT();
+  const apiFetch = useApiFetch();
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    fetch("/api/stats")
+    apiFetch("/api/stats")
       .then((r) => r.json())
       .then(setStats);
-  }, []);
+  }, [apiFetch]);
 
   const fmt = (n, digits) => (n == null ? "—" : n.toFixed(digits));
 
