@@ -12,7 +12,8 @@ export default function Nav() {
   const pathname = usePathname();
 
   const links = [
-    { href: "/", label: t.navVacancy, active: pathname === "/" },
+    { href: "/", label: t.navHome, active: pathname === "/" },
+    { href: "/vacancy", label: t.navVacancy, active: pathname === "/vacancy" },
     { href: "/candidates", label: t.navCandidates, active: pathname.startsWith("/candidates") },
     { href: "/stats", label: t.navStats, active: pathname === "/stats" },
   ];
@@ -28,12 +29,12 @@ export default function Nav() {
           </span>
           <span className="text-gray-900">{t.appName}</span>
         </Link>
-        <nav className="order-3 flex w-full gap-1 overflow-x-auto sm:order-none sm:w-auto">
+        <nav className="order-3 grid w-full grid-cols-4 gap-0.5 sm:order-none sm:gap-1 sm:flex sm:w-auto">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-md px-0.5 py-2 text-center text-[13px] font-medium transition-colors max-[359px]:text-xs max-[359px]:tracking-tight sm:px-3 sm:text-sm ${
                 l.active
                   ? "bg-indigo-50 text-indigo-700"
                   : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"

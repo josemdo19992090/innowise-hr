@@ -11,7 +11,7 @@ export default function VacancyBanner({ t, vacancy }) {
       <span className="min-w-0 flex-1 truncate text-gray-700" title={vacancy.summary}>
         {vacancy.summary}
       </span>
-      <Link href="/" className="text-xs font-medium text-indigo-600 hover:underline">
+      <Link href="/vacancy" className="text-xs font-medium text-indigo-600 hover:underline">
         {t.activeVacancyChange}
       </Link>
     </div>

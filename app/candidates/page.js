@@ -147,7 +147,7 @@ export default function CandidatesPage() {
         {!hasVacancy ? (
           <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
             {t.candNoVacancy}
-            <Link href="/" className="font-medium underline">
+            <Link href="/vacancy" className="font-medium underline">
               {t.candGoVacancy}
             </Link>
           </div>
