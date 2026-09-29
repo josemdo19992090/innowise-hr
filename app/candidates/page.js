@@ -20,6 +20,10 @@ const CONCURRENCY = 2;
 let uploadKeySeq = 0;
 const nextUploadKey = () => `upload-${++uploadKeySeq}`;
 
+// Same limit as the API route — checked here too so an oversized file fails
+// instantly with a clear message instead of after a pointless upload.
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
+
 export default function CandidatesPage() {
   const { t } = useT();
   const router = useRouter();
@@ -59,6 +63,10 @@ export default function CandidatesPage() {
     const worker = async () => {
       while (queue.length) {
         const job = queue.shift();
+        if (job.file.size > MAX_FILE_SIZE) {
+          setUpload(job.key, { status: "error", error: { error: "file_too_large" } });
+          continue;
+        }
         setUpload(job.key, { status: "processing" });
         try {
           const form = new FormData();

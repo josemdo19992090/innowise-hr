@@ -6,10 +6,11 @@ import { requireStorageKey } from "@/lib/auth-server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-// A text-only CV has no business being much bigger than a couple MB; this
-// mainly guards against someone (accidentally or not) uploading something
-// huge that would eat the request timeout instead of failing fast.
-const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
+// Kept under Vercel's 4.5 MB request-body cap: anything above it is
+// rejected by the platform before reaching this code, with a non-JSON 413
+// the client can only show as a generic error. A text CV is well under 1 MB.
+// Mirrored client-side in app/candidates/page.js.
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
 
 export async function GET(req) {
   const r = await requireStorageKey(req);

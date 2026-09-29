@@ -9,7 +9,7 @@ const nextKey = () => `criterion-${++keySeq}`;
 
 // Same record shape as an AI-evaluated candidate, filled by hand — including
 // the score, which is never typed in directly. The recruiter rates a set of
-// criteria 1–5, same mechanism as the interview checklist, and the 0–100 CV
+// criteria 1–10, same mechanism as the interview checklist, and the 0–100 CV
 // score is computed from that average, so it's backed by something instead
 // of being one subjective number.
 export default function ManualForm({

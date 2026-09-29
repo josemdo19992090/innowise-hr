@@ -1,7 +1,7 @@
-// Shared rating control — used by the interview checklist (1–5, a label
-// under every button) and by the manual CV-evaluation criteria (1–10, too
-// many buttons for a per-button label to fit, so only the defined anchor
-// points get one, shown as a legend above the row instead).
+// Shared rating control — used by the interview checklist and the manual
+// CV-evaluation criteria, both on a 1–10 scale (too many buttons for a
+// per-button label to fit, so only the defined anchor points get one,
+// shown as a legend above the row instead).
 //
 // `labels`: an array with one entry per point (1..max) — every button gets
 // its own label under it. Use for small scales (e.g. 1–5).
