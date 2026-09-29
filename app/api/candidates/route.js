@@ -1,14 +1,20 @@
 import { readDb, updateDb, newId } from "@/lib/db";
 import { pdfToText } from "@/lib/pdf";
 import { evaluateCv, AiError } from "@/lib/gemini";
-import { resolveStorageKey } from "@/lib/auth-server";
+import { requireStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+// A text-only CV has no business being much bigger than a couple MB; this
+// mainly guards against someone (accidentally or not) uploading something
+// huge that would eat the request timeout instead of failing fast.
+const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
+
 export async function GET(req) {
-  const key = await resolveStorageKey(req);
-  const db = await readDb(key);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const db = await readDb(r.key);
   const latestInterview = {};
   for (const i of db.interviews) {
     const prev = latestInterview[i.candidateId];
@@ -23,6 +29,7 @@ export async function GET(req) {
       cvScore: c.cvScore,
       summary: c.summary,
       createdAt: c.createdAt,
+      injectionSuspected: c.injectionSuspected || false,
       interviewScore: latestInterview[c.id]?.interviewScore ?? null,
       // Lets the "add manually" form reuse the previous manual candidate's
       // criteria for this vacancy, instead of always resetting to the
@@ -51,7 +58,9 @@ function summarizeVacancy(description) {
 // One PDF per request: the client uploads files in parallel and gets
 // per-file progress and errors.
 export async function POST(req) {
-  const key = await resolveStorageKey(req);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const key = r.key;
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   if (!file || typeof file === "string") return fail("no_file", 400);
@@ -60,6 +69,7 @@ export async function POST(req) {
   if (!fileName.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
     return fail("not_pdf", 400);
   }
+  if (file.size > MAX_FILE_SIZE) return fail("file_too_large", 413);
 
   const { vacancy } = await readDb(key);
   if (!vacancy) return fail("no_vacancy", 400);
@@ -97,7 +107,9 @@ export async function POST(req) {
 // Bulk delete: { ids: [...] } removes just those, { all: true } clears
 // every candidate (and their interviews) for the current user/guest.
 export async function DELETE(req) {
-  const key = await resolveStorageKey(req);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const key = r.key;
   const { ids, all } = await req.json().catch(() => ({}));
   if (!all && (!Array.isArray(ids) || ids.length === 0)) {
     return Response.json({ error: "bad_request" }, { status: 400 });

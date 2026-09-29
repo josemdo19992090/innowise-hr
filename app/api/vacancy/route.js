@@ -1,16 +1,19 @@
 import { readDb, updateDb } from "@/lib/db";
-import { resolveStorageKey } from "@/lib/auth-server";
+import { requireStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req) {
-  const key = await resolveStorageKey(req);
-  const db = await readDb(key);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const db = await readDb(r.key);
   return Response.json({ vacancy: db.vacancy });
 }
 
 export async function POST(req) {
-  const key = await resolveStorageKey(req);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const key = r.key;
   const { description } = await req.json().catch(() => ({}));
   if (!description || !description.trim()) {
     return Response.json({ error: "empty_description" }, { status: 400 });

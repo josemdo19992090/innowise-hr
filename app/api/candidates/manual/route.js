@@ -1,5 +1,5 @@
 import { readDb, updateDb, newId } from "@/lib/db";
-import { resolveStorageKey } from "@/lib/auth-server";
+import { requireStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,9 @@ export const dynamic = "force-dynamic";
 // backed by something a recruiter can look back at instead of a single
 // subjective figure.
 export async function POST(req) {
-  const key = await resolveStorageKey(req);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const key = r.key;
   const body = await req.json().catch(() => ({}));
 
   const { vacancy } = await readDb(key);

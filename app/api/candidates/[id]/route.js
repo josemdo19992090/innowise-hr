@@ -1,12 +1,13 @@
 import { readDb, updateDb } from "@/lib/db";
-import { resolveStorageKey } from "@/lib/auth-server";
+import { requireStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req, { params }) {
   const { id } = await params;
-  const key = await resolveStorageKey(req);
-  const db = await readDb(key);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const db = await readDb(r.key);
   const candidate = db.candidates.find((c) => c.id === id);
   if (!candidate) return Response.json({ error: "not_found" }, { status: 404 });
   const interviews = db.interviews
@@ -17,8 +18,9 @@ export async function GET(req, { params }) {
 
 export async function DELETE(req, { params }) {
   const { id } = await params;
-  const key = await resolveStorageKey(req);
-  const existed = await updateDb(key, (db) => {
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const existed = await updateDb(r.key, (db) => {
     const before = db.candidates.length;
     db.candidates = db.candidates.filter((c) => c.id !== id);
     db.interviews = db.interviews.filter((i) => i.candidateId !== id);

@@ -13,6 +13,13 @@ import ManualForm from "./ManualForm";
 // Free-tier Gemini quotas are per-minute, so don't fire every file at once.
 const CONCURRENCY = 2;
 
+// Date.now() alone can collide if two drops land in the same millisecond
+// (e.g. dragging two batches in fast succession), which would make two
+// upload rows share a key and update together. A module-level counter
+// can't collide.
+let uploadKeySeq = 0;
+const nextUploadKey = () => `upload-${++uploadKeySeq}`;
+
 export default function CandidatesPage() {
   const { t } = useT();
   const router = useRouter();
@@ -45,7 +52,7 @@ export default function CandidatesPage() {
   async function handleFiles(fileList) {
     const files = [...fileList].filter((f) => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf");
     if (!files.length) return;
-    const batch = files.map((file, i) => ({ key: `${Date.now()}-${i}`, file, name: file.name, status: "queued" }));
+    const batch = files.map((file) => ({ key: nextUploadKey(), file, name: file.name, status: "queued" }));
     setUploads((list) => [...batch, ...list]);
 
     const queue = [...batch];
@@ -328,6 +335,14 @@ export default function CandidatesPage() {
                       {c.source === "manual" && (
                         <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
                           {t.manualBadge}
+                        </span>
+                      )}
+                      {c.injectionSuspected && (
+                        <span
+                          title={t.injectionWarning}
+                          className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-600 ring-1 ring-inset ring-red-200"
+                        >
+                          {t.injectionBadge}
                         </span>
                       )}
                     </div>

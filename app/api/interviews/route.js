@@ -1,10 +1,12 @@
 import { updateDb, newId } from "@/lib/db";
-import { resolveStorageKey } from "@/lib/auth-server";
+import { requireStorageKey } from "@/lib/auth-server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req) {
-  const key = await resolveStorageKey(req);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const key = r.key;
   const { candidateId, items } = await req.json().catch(() => ({}));
   if (!candidateId || !Array.isArray(items)) {
     return Response.json({ error: "bad_request" }, { status: 400 });

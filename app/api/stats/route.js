@@ -1,5 +1,5 @@
 import { readDb } from "@/lib/db";
-import { resolveStorageKey } from "@/lib/auth-server";
+import { requireStorageKey } from "@/lib/auth-server";
 import { groupCompetencies } from "@/lib/competencies";
 
 export const dynamic = "force-dynamic";
@@ -7,8 +7,9 @@ export const dynamic = "force-dynamic";
 const avg = (nums) => (nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null);
 
 export async function GET(req) {
-  const key = await resolveStorageKey(req);
-  const db = await readDb(key);
+  const r = await requireStorageKey(req);
+  if (r.error) return r.error;
+  const db = await readDb(r.key);
 
   const items = db.interviews.flatMap((interview) => interview.items);
   const competencies = groupCompetencies(items)
