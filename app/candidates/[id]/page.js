@@ -139,6 +139,12 @@ export default function CandidatePage() {
         </div>
       </div>
 
+      {candidate.injectionSuspected && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 print:hidden">
+          {t.injectionWarning}
+        </div>
+      )}
+
       {/* CV evaluation */}
       <section className="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm shadow-gray-200/60 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
